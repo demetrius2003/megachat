@@ -1,0 +1,303 @@
+/* Основные стили */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 0.5rem;
+}
+
+/* Стили сообщений */
+.message-card {
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: transparent;
+    max-width: 70%;
+    word-wrap: break-word;
+}
+
+/* Сообщения текущего пользователя (справа) */
+.message-card.text-end {
+    margin-left: auto;
+    text-align: right;
+}
+
+.message-card.text-end .message-container {
+    background-color: #007bff;
+    color: white;
+    border-radius: 1rem 1rem 0.25rem 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Сообщения оппонентов (слева) */
+.message-card.text-start {
+    margin-right: auto;
+    text-align: left;
+}
+
+.message-card.text-start .message-container {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-radius: 1rem 1rem 1rem 0.25rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Контейнер сообщения */
+.message-container {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    position: relative;
+    max-width: 100%;
+    margin: 0;
+}
+
+.message-file {
+    border-left: 4px solid #007bff;
+}
+
+.message-note {
+    border-left: 4px solid #28a745;
+}
+
+.message-image {
+    border-left: 4px solid #ffc107;
+}
+
+/* Статусы пользователей */
+.status-online {
+    color: #28a745;
+}
+
+.status-offline {
+    color: #6c757d;
+}
+
+/* Эмодзи пикер */
+.emoji-picker {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.emoji-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    padding: 0.25rem;
+    margin: 0.1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.emoji-btn:hover {
+    background-color: #f8f9fa;
+}
+
+/* Реакции на сообщения */
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.reaction {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 1rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reaction:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.reaction-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.875rem;
+    transition: opacity 0.2s;
+}
+
+.reaction-btn:hover {
+    opacity: 1 !important;
+}
+
+.reaction-picker {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+}
+
+/* Голосовые сообщения */
+.voice-recording {
+    background: #dc3545;
+    color: white;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.voice-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.voice-waveform {
+    flex: 1;
+    height: 20px;
+    background: linear-gradient(90deg, #007bff 0%, #007bff 50%, #e9ecef 50%, #e9ecef 100%);
+    border-radius: 10px;
+    position: relative;
+}
+
+.voice-duration {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Контекстное меню сообщений */
+.message-context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 150px;
+    display: none;
+}
+
+.message-context-menu button {
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0;
+}
+
+.message-context-menu button:hover {
+    background-color: #f8f9fa;
+}
+
+.message-context-menu button:first-child {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.message-context-menu button:last-child {
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.message-context-menu button.danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.quote-message {
+    background: #f8f9fa;
+    border-left: 3px solid #007bff;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 0.25rem;
+    font-style: italic;
+}
+
+.edit-message {
+    width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    resize: vertical;
+}
+
+/* Индикаторы печати */
+.typing-indicator {
+    font-style: italic;
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin: 0.5rem 0;
+}
+
+.user-status {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.user-status.online {
+    background-color: #28a745;
+}
+
+.user-status.offline {
+    background-color: #6c757d;
+}
+
+.typing-users {
+    position: fixed;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    z-index: 1000;
+}
+

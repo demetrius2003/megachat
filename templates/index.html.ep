@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Мегачат - Объединенный мессенджер</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/main.css?v=30" rel="stylesheet" onload="console.log('✅ CSS загружен успешно!')" onerror="console.error('❌ CSS НЕ загружен!')">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-chat-dots-fill"></i> Мегачат
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> <span id="username">admin</span>
+                        <span id="userStatus" class="status-offline ms-1">●</span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="adminLink" style="display: none;">
+                            <i class="bi bi-gear"></i> Админ-панель
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="logoutBtn">
+                            <i class="bi bi-box-arrow-right"></i> Выйти
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid p-0">
+        <div class="row g-0 h-100">
+            <!-- Боковая панель -->
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Чаты</h5>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#newChatModal" title="Новый чат">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                                <button class="btn btn-light" id="showNoteModalBtn" title="Новая заметка">
+                                    <i class="bi bi-journal-text"></i>
+                                </button>
+                                <button class="btn btn-light" id="showFileUploadBtn" title="Загрузить файл">
+                                    <i class="bi bi-paperclip"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Поиск по сообщениям -->
+                        <div class="p-3 border-bottom">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="messageSearch" placeholder="Поиск сообщений...">
+                                <button class="btn btn-outline-secondary" type="button" id="searchMessagesBtn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                            <div class="mt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="searchText" checked>
+                                    <label class="form-check-label" for="searchText">Текст</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="searchFiles" checked>
+                                    <label class="form-check-label" for="searchFiles">Файлы</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="searchNotes" checked>
+                                    <label class="form-check-label" for="searchNotes">Заметки</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Список чатов -->
+                        <div class="list-group list-group-flush" id="conversationsList">
+                            <!-- Чаты будут загружены здесь -->
+                        </div>
+                        
+                        <!-- Пустое состояние -->
+                        <div id="emptyConversations" class="text-center p-4" style="display: none;">
+                            <i class="bi bi-chat-dots display-1 text-muted"></i>
+                            <p class="text-muted">Нет чатов</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                                Создать чат
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Основная область чата -->
+            <div class="col-md-8 col-lg-9">
+                
+                <div id="chatArea" class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0" id="chatTitle">Выберите чат</h5>
+                        <small class="text-muted" id="chatDescription">Выберите чат из списка слева</small>
+                    </div>
+                    <div class="card-body p-0 d-flex flex-column">
+                        <div id="messagesContainer" class="flex-grow-1 p-3" style="overflow-y: auto; max-height: 500px;">
+                            <!-- Результаты поиска сообщений -->
+                            <div id="messageSearchResults" class="mb-3" style="display: none;">
+                                <h6>📄 Результаты поиска:</h6>
+                                <div id="messageSearchResultsList" class="list-group">
+                                    <!-- Результаты поиска будут здесь -->
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="hideMessageSearchResults()">
+                                    <i class="bi bi-x"></i> Закрыть поиск
+                                </button>
+                            </div>
+                            
+                            <div id="messagesList">
+                                <!-- Сообщения будут загружены здесь -->
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <form id="messageForm">
+                                <div class="input-group">
+                                    <button type="button" class="btn btn-outline-secondary" id="toggleEmojiPickerBtn">
+                                        <i class="bi bi-emoji-smile"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="showFileUploadBtn2">
+                                        <i class="bi bi-paperclip"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="toggleVoiceRecordingBtn">
+                                        <i class="bi bi-mic"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="showNoteModalBtn2">
+                                        <i class="bi bi-journal-text"></i>
+                                    </button>
+                                    <input type="text" class="form-control" id="messageInput" placeholder="Введите сообщение...">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </div>
+                                <input type="file" id="fileInput" style="display: none;" onchange="uiManager.handleFileSelect(event)">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно для создания нового чата -->
+    <div class="modal fade" id="newChatModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Новый чат</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="newChatForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="chatName" class="form-label">Название чата (необязательно)</label>
+                            <input type="text" class="form-control" id="chatName" placeholder="Введите название чата...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="chatDescription" class="form-label">Описание (необязательно)</label>
+                            <textarea class="form-control" id="chatDescription" rows="2" placeholder="Краткое описание чата..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="participantsSearch" class="form-label">Поиск участников</label>
+                            <input type="text" class="form-control" id="participantsSearch" placeholder="Введите имя пользователя...">
+                        </div>
+                        <div id="searchResults" class="mb-3" style="display: none;">
+                            <label class="form-label">Найденные пользователи:</label>
+                            <div id="searchResultsList" class="list-group">
+                                <!-- Результаты поиска будут здесь -->
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Выбранные участники:</label>
+                            <div id="selectedParticipants" class="list-group">
+                                <div class="list-group-item text-muted">Участники не выбраны</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-warning" id="testFunctionBtn">Тест</button>
+                        <button type="button" class="btn btn-primary" id="createChatButton">
+                            <span id="createChatText">Создать чат</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для заметок -->
+    <div class="modal fade" id="noteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="noteModalTitle">Новая заметка</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="noteForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="noteTitle" class="form-label">Заголовок</label>
+                            <input type="text" class="form-control" id="noteTitle" placeholder="Введите заголовок заметки..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="noteContent" class="form-label">Содержание</label>
+                            <textarea class="form-control" id="noteContent" rows="4" placeholder="Введите содержание заметки..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="noteColor" class="form-label">Цвет</label>
+                            <select class="form-select" id="noteColor">
+                                <option value="#007bff">Синий</option>
+                                <option value="#28a745">Зеленый</option>
+                                <option value="#ffc107">Желтый</option>
+                                <option value="#dc3545">Красный</option>
+                                <option value="#6f42c1">Фиолетовый</option>
+                                <option value="#fd7e14">Оранжевый</option>
+                                <option value="#20c997">Бирюзовый</option>
+                                <option value="#6c757d">Серый</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-primary" id="noteSaveBtn">Создать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для просмотра изображений -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalTitle">Изображение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="imageModalImage" class="img-fluid" style="max-height: 70vh;">
+                </div>
+                <div class="modal-footer">
+                    <a id="imageModalDownload" class="btn btn-primary" target="_blank">
+                        <i class="bi bi-download"></i> Скачать
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Эмодзи пикер -->
+    <div id="emojiPicker" class="emoji-picker">
+        <div class="row">
+            <div class="col-12">
+                <h6 class="mb-2">Лица</h6>
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="emoji-btn" onclick="console.log('😀 Клик по эмодзи!'); if(window.uiManager) { window.uiManager.insertEmoji('😀'); } else { console.error('❌ uiManager НЕ найден!'); }">😀</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😃')">😃</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😄')">😄</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😁')">😁</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😆')">😆</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😂')">😂</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😊')">😊</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😍')">😍</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('🤔')">🤔</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😎')">😎</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😴')">😴</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('😢')">😢</button>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-12">
+                <h6 class="mb-2">Жесты</h6>
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('👍')">👍</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('👎')">👎</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('👌')">👌</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('✌️')">✌️</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('🤝')">🤝</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('👏')">👏</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('🙌')">🙌</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('🤞')">🤞</button>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-12">
+                <h6 class="mb-2">Сердца</h6>
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('❤️')">❤️</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('💙')">💙</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('💚')">💚</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('💛')">💛</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('💜')">💜</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('🖤')">🖤</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('🤍')">🤍</button>
+                    <button type="button" class="emoji-btn" onclick="window.uiManager.insertEmoji('💔')">💔</button>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-12">
+                <h6 class="mb-2">Праздники</h6>
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="emoji-btn" data-emoji="🎉">🎉</button>
+                    <button type="button" class="emoji-btn" data-emoji="🎊">🎊</button>
+                    <button type="button" class="emoji-btn" data-emoji="🎈">🎈</button>
+                    <button type="button" class="emoji-btn" data-emoji="🎁">🎁</button>
+                    <button type="button" class="emoji-btn" data-emoji="🎂">🎂</button>
+                    <button type="button" class="emoji-btn" data-emoji="🍰">🍰</button>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-12">
+                <h6 class="mb-2">Природа</h6>
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="emoji-btn" data-emoji="🌞">🌞</button>
+                    <button type="button" class="emoji-btn" data-emoji="🌙">🌙</button>
+                    <button type="button" class="emoji-btn" data-emoji="⭐">⭐</button>
+                    <button type="button" class="emoji-btn" data-emoji="🌟">🌟</button>
+                    <button type="button" class="emoji-btn" data-emoji="🌈">🌈</button>
+                    <button type="button" class="emoji-btn" data-emoji="☀️">☀️</button>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-12">
+                <h6 class="mb-2">Животные</h6>
+                <div class="d-flex flex-wrap">
+                    <button type="button" class="emoji-btn" data-emoji="🐶">🐶</button>
+                    <button type="button" class="emoji-btn" data-emoji="🐱">🐱</button>
+                    <button type="button" class="emoji-btn" data-emoji="🐭">🐭</button>
+                    <button type="button" class="emoji-btn" data-emoji="🐹">🐹</button>
+                    <button type="button" class="emoji-btn" data-emoji="🐰">🐰</button>
+                    <button type="button" class="emoji-btn" data-emoji="🦊">🦊</button>
+                    <button type="button" class="emoji-btn" data-emoji="🐻">🐻</button>
+                    <button type="button" class="emoji-btn" data-emoji="🐼">🐼</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Встроенный JavaScript для критических функций -->
+    <!-- Встроенный JavaScript удален - используем внешние модули -->
+    <script>
+        // Только необходимые глобальные функции
+        window.logout = function() {
+            fetch('/api/auth/logout', { method: 'POST' })
+                .then(() => window.location.href = '/login')
+                .catch(error => console.error('Logout failed:', error));
+        };
+        
+        // Функция для применения стилей к сообщениям
+        window.applyMessageStyles = function() {
+            const messageCards = document.querySelectorAll('.message-card');
+            // console.log('🎨 Применяем стили к сообщениям, найдено:', messageCards.length);
+            
+            messageCards.forEach((card, index) => {
+                const isTextEnd = card.classList.contains('text-end');
+                const isTextStart = card.classList.contains('text-start');
+                
+                if (isTextEnd) {
+                    card.style.textAlign = 'right';
+                    card.style.marginLeft = 'auto';
+                    card.style.marginRight = '0';
+                    
+                    // Найдем контейнер сообщения и применим стили
+                    const container = card.querySelector('.message-container');
+                    if (container) {
+                        container.style.backgroundColor = '#007bff';
+                        container.style.color = 'white';
+                        container.style.borderRadius = '1rem 1rem 0.25rem 1rem';
+                        // if (index < 3) console.log('🎨 Применили голубой стиль к правому сообщению');
+                    }
+                } else if (isTextStart) {
+                    card.style.textAlign = 'left';
+                    card.style.marginLeft = '0';
+                    card.style.marginRight = 'auto';
+                    
+                    // Найдем контейнер сообщения и применим стили
+                    const container = card.querySelector('.message-container');
+                    if (container) {
+                        container.style.backgroundColor = '#f8f9fa';
+                        container.style.color = '#212529';
+                        container.style.border = '1px solid #e9ecef';
+                        container.style.borderRadius = '1rem 1rem 1rem 0.25rem';
+                        // if (index < 3) console.log('🎨 Применили серый стиль к левому сообщению');
+                    }
+                }
+            });
+        };
+
+        window.createChatHTML = function() {
+            console.log('🚀 Создание чата...');
+            console.log('🔍 Функция createChat вызвана!');
+            
+            // Небольшая задержка для рендеринга модального окна
+            setTimeout(() => {
+                // Получаем данные из формы
+                const chatNameEl = document.getElementById('chatName');
+                const chatDescriptionEl = document.getElementById('chatDescription');
+            
+            console.log('📝 Элементы формы:', { 
+                chatNameEl: !!chatNameEl, 
+                chatDescriptionEl: !!chatDescriptionEl,
+                chatNameElValue: chatNameEl ? chatNameEl.value : 'undefined',
+                chatDescriptionElValue: chatDescriptionEl ? chatDescriptionEl.value : 'undefined'
+            });
+            
+                const chatName = chatNameEl ? (chatNameEl.value || '').trim() : '';
+                const chatDescription = chatDescriptionEl ? (chatDescriptionEl.value || '').trim() : '';
+            const participants = document.getElementById('selectedParticipants');
+            
+            // Проверяем, что есть участники
+            console.log('🔍 Проверка участников:', {
+                participantsElement: !!participants,
+                childrenLength: participants ? participants.children.length : 0,
+                selectedParticipants: window.selectedParticipants ? window.selectedParticipants.length : 0,
+                selectedParticipantsArray: window.selectedParticipants
+            });
+            
+            if (!window.selectedParticipants || window.selectedParticipants.length === 0) {
+                alert('Выберите участников для чата!');
+                return;
+            }
+            
+            console.log('👥 Участники:', window.selectedParticipants);
+            
+            // Собираем ID участников
+            const participantIds = window.selectedParticipants.map(p => p.id);
+            
+            console.log('📝 Данные чата:', {
+                name: chatName,
+                description: chatDescription,
+                participants: participantIds
+            });
+            
+            // Показываем индикатор загрузки
+            const createButton = document.querySelector('#newChatModal .btn-primary');
+            const originalText = createButton.innerHTML;
+            createButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Создание...';
+            createButton.disabled = true;
+            
+            // Отправляем запрос на создание чата
+            fetch('/api/conversations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: chatName || 'Новый чат',
+                    description: chatDescription,
+                    participants: participantIds
+                })
+            })
+            .then(response => {
+                console.log('📡 Ответ API:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Чат создан:', data);
+                
+                // Закрываем модальное окно
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newChatModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Очищаем форму
+                document.getElementById('chatName').value = '';
+                document.getElementById('chatDescription').value = '';
+                document.getElementById('participantsSearch').value = '';
+                document.getElementById('searchResults').style.display = 'none';
+                document.getElementById('selectedParticipants').innerHTML = '<div class="list-group-item text-muted">Участники не выбраны</div>';
+                window.selectedParticipants = [];
+                
+                // Показываем уведомление об успехе
+                alert('Чат успешно создан!');
+                
+                // Обновляем список чатов
+                loadConversations();
+                
+            })
+            .catch(error => {
+                console.error('❌ Ошибка создания чата:', error);
+                alert('Ошибка при создании чата: ' + error.message);
+            })
+            .finally(() => {
+                // Восстанавливаем кнопку
+                createButton.innerHTML = originalText;
+                createButton.disabled = false;
+            });
+            }, 100); // Задержка 100мс
+        };
+        
+        // Функция поиска участников
+        window.searchUsers = function(query) {
+            console.log('🔍 Поиск участников:', query);
+            
+            // Проверяем, что мы в модальном окне
+            const modal = document.getElementById('newChatModal');
+            if (!modal || !modal.classList.contains('show')) {
+                console.log('❌ Модальное окно не открыто');
+                return;
+            }
+            
+            if (query.length < 2) {
+                const searchResults = document.getElementById('searchResults');
+                if (searchResults) {
+                    searchResults.style.display = 'none';
+                }
+                return;
+            }
+            
+            console.log('📡 Отправляем запрос к API...');
+            fetch(`/api/users/search?q=${encodeURIComponent(query)}`)
+                .then(response => {
+                    console.log('📡 Ответ API:', response.status);
+                    return response.json();
+                })
+                .then(users => {
+                    console.log('👥 Найденные пользователи:', users);
+                    const container = document.getElementById('searchResultsList');
+                    const searchResults = document.getElementById('searchResults');
+                    
+                    if (!container || !searchResults) {
+                        console.error('❌ Контейнеры не найдены!');
+                        return;
+                    }
+                    
+                    if (users.length === 0) {
+                        container.innerHTML = '<div class="list-group-item text-muted">Пользователи не найдены</div>';
+                    } else {
+                        container.innerHTML = users.map(user => {
+                            console.log('🔍 Создаем элемент для пользователя:', user);
+                            return `
+                                <div class="list-group-item list-group-item-action" data-user-id="${user.id}" data-username="${user.username}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">${user.username}</h6>
+                                        <small class="text-muted">${user.status === 'online' ? '🟢' : '⚫'}</small>
+                                    </div>
+                                    <p class="mb-1 text-muted small">${user.email || 'Нет email'}</p>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // Добавляем обработчики событий для участников
+                        const items = container.querySelectorAll('.list-group-item-action');
+                        console.log('🔍 Найдено элементов для обработчиков:', items.length);
+                        
+                        if (items.length === 0) {
+                            console.error('❌ Элементы не найдены!');
+                            return;
+                        }
+                        
+                        items.forEach((item, index) => {
+                            const userId = item.getAttribute('data-user-id');
+                            const username = item.getAttribute('data-username');
+                            console.log(`🔍 Добавляем обработчик для элемента ${index}:`, userId, username);
+                            console.log(`🔍 HTML элемента ${index}:`, item.outerHTML);
+                            
+                            item.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                
+                                const userId = parseInt(this.getAttribute('data-user-id'));
+                                const username = this.getAttribute('data-username');
+                                console.log('🔴 КЛИК ПО УЧАСТНИКУ (прямой):', userId, username);
+                                console.log('🔍 Атрибуты элемента (прямой):', {
+                                    'data-user-id': this.getAttribute('data-user-id'),
+                                    'data-username': this.getAttribute('data-username'),
+                                    dataset: this.dataset
+                                });
+                                addParticipant(userId, username);
+                            });
+                            
+                            // Добавляем обработчик для всех дочерних элементов
+                            item.querySelectorAll('*').forEach(child => {
+                                child.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    
+                                    const userId = parseInt(item.getAttribute('data-user-id'));
+                                    const username = item.getAttribute('data-username');
+                                    console.log('🔴 КЛИК ПО УЧАСТНИКУ (дочерний):', userId, username);
+                                    console.log('🔍 Атрибуты элемента (дочерний):', {
+                                        'data-user-id': item.getAttribute('data-user-id'),
+                                        'data-username': item.getAttribute('data-username'),
+                                        dataset: item.dataset
+                                    });
+                                    addParticipant(userId, username);
+                                });
+                            });
+                        });
+                        
+                        // Альтернативный способ - делегирование событий
+                        container.addEventListener('click', function(e) {
+                            console.log('🔍 Клик по контейнеру:', e.target);
+                            console.log('🔍 Класс элемента:', e.target.className);
+                            console.log('🔍 Родительский элемент:', e.target.parentElement);
+                            console.log('🔍 Родительский элемент родителя:', e.target.parentElement?.parentElement);
+                            
+                            // Ищем элемент с нужным классом вверх по иерархии
+                            let item = e.target;
+                            while (item && !item.classList.contains('list-group-item-action')) {
+                                item = item.parentElement;
+                            }
+                            
+                            console.log('🔍 Найденный элемент:', item);
+                            
+                            if (item && item.classList.contains('list-group-item-action')) {
+                                const userId = parseInt(item.getAttribute('data-user-id'));
+                                const username = item.getAttribute('data-username');
+                                console.log('🔴 КЛИК ПО УЧАСТНИКУ (делегирование):', userId, username);
+                                console.log('🔍 Атрибуты элемента:', {
+                                    'data-user-id': item.getAttribute('data-user-id'),
+                                    'data-username': item.getAttribute('data-username'),
+                                    dataset: item.dataset
+                                });
+                                addParticipant(userId, username);
+                            }
+                        });
+                    }
+                    
+                    searchResults.style.display = 'block';
+                    console.log('✅ Результаты отображены в модальном окне');
+                })
+                .catch(error => {
+                    console.error('❌ Ошибка поиска:', error);
+                });
+        };
+        
+        // Функция добавления участника
+        window.selectedParticipants = [];
+        window.addParticipant = function(userId, username) {
+            console.log('🔴 addParticipant вызвана:', userId, username);
+            console.log('🔍 Текущие участники до добавления:', window.selectedParticipants);
+            
+            if (!window.selectedParticipants.find(p => p.id === userId)) {
+                window.selectedParticipants.push({ id: userId, username: username });
+                console.log('✅ Участник добавлен. Новый список:', window.selectedParticipants);
+                updateSelectedParticipants();
+            } else {
+                console.log('⚠️ Участник уже добавлен');
+            }
+            
+            document.getElementById('participantsSearch').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+        };
+        
+        // Функция обновления списка выбранных участников
+        window.updateSelectedParticipants = function() {
+            const container = document.getElementById('selectedParticipants');
+            if (window.selectedParticipants.length === 0) {
+                container.innerHTML = '<div class="list-group-item text-muted">Участники не выбраны</div>';
+            } else {
+                container.innerHTML = window.selectedParticipants.map(participant => `
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>${participant.username}</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-participant-id="${participant.id}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                `).join('');
+                
+                // Добавляем обработчики для кнопок удаления
+                container.querySelectorAll('button[data-participant-id]').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const participantId = parseInt(this.getAttribute('data-participant-id'));
+                        removeParticipant(participantId);
+                    });
+                });
+            }
+        };
+        
+        // Функция удаления участника
+        window.removeParticipant = function(userId) {
+            window.selectedParticipants = window.selectedParticipants.filter(p => p.id !== userId);
+            updateSelectedParticipants();
+        };
+        
+        // Функции для кнопок
+        
+        window.showFileUpload = function() {
+            document.getElementById('fileInput').click();
+        };
+        
+        window.toggleVoiceRecording = function() {
+            alert('Голосовые сообщения временно недоступны');
+        };
+        
+        window.showNoteModal = function() {
+            const modal = new bootstrap.Modal(document.getElementById('noteModal'));
+            modal.show();
+        };
+        
+        // Обработчик выбора файла
+        window.handleFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert('Загрузка файлов временно недоступна');
+            }
+        };
+        
+        // Функция поиска сообщений
+        window.searchMessages = function() {
+            console.log('🔍 Запрос поиска сообщений');
+            if (window.searchManager && window.searchManager.searchMessages) {
+                searchManager.searchMessages();
+            } else {
+                console.error('searchManager не инициализирован');
+                alert('Модуль поиска не готов. Попробуйте через секунду.');
+            }
+        };
+        
+        // Функция скрытия результатов поиска
+        window.hideMessageSearchResults = function() {
+            const searchResults = document.getElementById('messageSearchResults');
+            if (searchResults) {
+                searchResults.style.display = 'none';
+            }
+        };
+        
+        // Функция загрузки списка чатов
+        window.loadConversations = function() {
+            console.log('🔄 Загружаем список чатов...');
+            
+            fetch('/api/conversations')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('📋 Список чатов:', data);
+                    const container = document.getElementById('conversationsList');
+                    
+                    // API возвращает массив напрямую, а не объект с полем conversations
+                    const conversations = Array.isArray(data) ? data : (data.conversations || []);
+                    
+                    if (!conversations || conversations.length === 0) {
+                        container.innerHTML = '<div class="list-group-item text-muted text-center">Нет чатов</div>';
+                        document.getElementById('emptyConversations').style.display = 'block';
+                    } else {
+                        document.getElementById('emptyConversations').style.display = 'none';
+                        container.innerHTML = conversations.map(chat => `
+                            <div class="list-group-item list-group-item-action" data-chat-id="${chat.id}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${chat.name || 'Без названия'}</h6>
+                                    <small class="text-muted">${chat.updated_at_formatted || new Date(chat.updated_at * 1000).toLocaleDateString()}</small>
+                                </div>
+                                <p class="mb-1 text-muted small">${chat.description || 'Нет описания'}</p>
+                                <small class="text-muted">${chat.last_message ? 'Последнее сообщение: ' + chat.last_message : 'Нет сообщений'}</small>
+                            </div>
+                        `).join('');
+                        
+                        // Добавляем обработчики для чатов
+                        container.querySelectorAll('div[data-chat-id]').forEach(chatItem => {
+                            chatItem.addEventListener('click', function() {
+                                const chatId = parseInt(this.getAttribute('data-chat-id'));
+                                selectConversation(chatId);
+                            });
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Ошибка загрузки чатов:', error);
+                });
+        };
+        
+        
+        // Функция выбора чата
+        window.selectConversation = function(chatId) {
+            console.log('💬 Выбираем чат:', chatId);
+            if (window.chatManager) {
+                chatManager.selectConversation(chatId);
+            } else {
+                console.error('chatManager не инициализирован');
+                alert('Чат-менеджер не готов. Попробуйте через секунду.');
+            }
+        };
+        
+        // Тестовая функция
+        window.testFunction = function() {
+            console.log('🧪 Тестовая функция работает!');
+            alert('Тестовая функция работает!');
+        };
+        
+        // Функция вставки эмодзи
+        window.insertEmoji = function(emoji) {
+            console.log('😀 Вставляем эмодзи:', emoji);
+            const messageInput = document.getElementById('messageInput');
+            console.log('😀 Поле ввода найдено:', !!messageInput);
+            
+            if (messageInput) {
+                const start = messageInput.selectionStart || 0;
+                const end = messageInput.selectionEnd || 0;
+                const text = messageInput.value || '';
+                
+                console.log('😀 Позиция курсора:', { start, end, text });
+                
+                messageInput.value = text.substring(0, start) + emoji + text.substring(end);
+                messageInput.focus();
+                messageInput.setSelectionRange(start + emoji.length, start + emoji.length);
+                
+                console.log('😀 Новый текст:', messageInput.value);
+            } else {
+                console.error('😀 Поле ввода не найдено!');
+            }
+            
+            // Закрываем эмодзи пикер
+            const picker = document.getElementById('emojiPicker');
+            if (picker) {
+                picker.style.display = 'none';
+                console.log('😀 Эмодзи пикер закрыт');
+            }
+        };
+        
+        // Простая инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, но модули не инициализированы');
+            console.log('Проблема: статические файлы не загружаются');
+            
+            // Проверяем загрузку CSS
+            const cssLink = document.querySelector('link[href*="main.css"]');
+            if (cssLink) {
+                console.log('🔍 CSS ссылка найдена:', cssLink.href);
+                // Проверяем, загружен ли CSS
+                const testElement = document.createElement('div');
+                testElement.className = 'message-card';
+                testElement.style.display = 'none';
+                document.body.appendChild(testElement);
+                
+                const computedStyle = window.getComputedStyle(testElement);
+                console.log('🔍 CSS загружен:', computedStyle.maxWidth !== 'none');
+                
+                document.body.removeChild(testElement);
+            } else {
+                console.error('❌ CSS ссылка не найдена!');
+            }
+            
+            // Проверяем, что функция createChatHTML определена
+            console.log('🔍 Проверяем функцию createChatHTML:', typeof window.createChatHTML);
+            if (typeof window.createChatHTML !== 'function') {
+                console.error('❌ Функция createChatHTML не определена!');
+            }
+            
+            // Альтернативный способ подключения обработчика
+            const createButton = document.getElementById('createChatButton');
+            if (createButton) {
+                console.log('🔍 Найдена кнопка создания чата');
+                createButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔴 КНОПКА НАЖАТА ЧЕРЕЗ addEventListener!');
+                    console.log('🔍 Тип createChatHTML:', typeof window.createChatHTML);
+                    if (typeof window.createChatHTML === 'function') {
+                        console.log('✅ Вызываем createChatHTML()');
+                        window.createChatHTML();
+                    } else {
+                        console.error('❌ Функция createChatHTML не найдена!');
+                        alert('Функция createChatHTML не найдена!');
+                    }
+                });
+            } else {
+                console.error('❌ Кнопка создания чата не найдена!');
+            }
+            
+            // Загружаем список чатов при старте
+            loadConversations();
+            
+            // Обработчик для кнопки поиска сообщений
+            const searchMessagesBtn = document.getElementById('searchMessagesBtn');
+            if (searchMessagesBtn) {
+                searchMessagesBtn.addEventListener('click', function() {
+                    searchMessages();
+                });
+            }
+            
+            // Обработчик для поиска по Enter
+            const messageSearchInput = document.getElementById('messageSearch');
+            if (messageSearchInput) {
+                messageSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchMessages();
+                    }
+                });
+            }
+            
+            // Обработчик для кнопки заметок
+            const showNoteModalBtn = document.getElementById('showNoteModalBtn');
+            if (showNoteModalBtn) {
+                showNoteModalBtn.addEventListener('click', function() {
+                    showNoteModal();
+                });
+            }
+            
+            // Обработчик для кнопки загрузки файлов
+            const showFileUploadBtn = document.getElementById('showFileUploadBtn');
+            if (showFileUploadBtn) {
+                showFileUploadBtn.addEventListener('click', function() {
+                    showFileUpload();
+                });
+            }
+            
+            // Обработчик для кнопки эмодзи
+            const toggleEmojiPickerBtn = document.getElementById('toggleEmojiPickerBtn');
+            console.log('🎭 Кнопка эмодзи найдена:', !!toggleEmojiPickerBtn);
+            if (toggleEmojiPickerBtn) {
+                toggleEmojiPickerBtn.addEventListener('click', function(e) {
+                    console.log('🎭 КЛИК ПО КНОПКЕ ЭМОДЗИ!');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (window.uiManager) {
+                        window.uiManager.toggleEmojiPicker();
+                    } else {
+                        console.error('❌ uiManager НЕ найден!');
+                    }
+                });
+            } else {
+                console.error('🎭 Кнопка эмодзи не найдена!');
+            }
+            
+            // Обработчик для второй кнопки загрузки файлов
+            const showFileUploadBtn2 = document.getElementById('showFileUploadBtn2');
+            if (showFileUploadBtn2) {
+                showFileUploadBtn2.addEventListener('click', function() {
+                    showFileUpload();
+                });
+            }
+            
+            // Обработчик для кнопки голосовых сообщений
+            const toggleVoiceRecordingBtn = document.getElementById('toggleVoiceRecordingBtn');
+            if (toggleVoiceRecordingBtn) {
+                toggleVoiceRecordingBtn.addEventListener('click', function() {
+                    toggleVoiceRecording();
+                });
+            }
+            
+            // Обработчик для второй кнопки заметок
+            const showNoteModalBtn2 = document.getElementById('showNoteModalBtn2');
+            if (showNoteModalBtn2) {
+                showNoteModalBtn2.addEventListener('click', function() {
+                    showNoteModal();
+                });
+            }
+            
+            // Обработчик для кнопки сохранения заметки
+            const noteSaveBtn = document.getElementById('noteSaveBtn');
+            if (noteSaveBtn) {
+                noteSaveBtn.addEventListener('click', function() {
+                    console.log('📝 Сохранение заметки...');
+                    if (window.noteManager && window.noteManager.createNote) {
+                        window.noteManager.createNote();
+                    } else {
+                        console.error('📝 noteManager не найден!');
+                        alert('Ошибка: модуль заметок не загружен');
+                    }
+                });
+            }
+            
+            // Обработчик для кнопки теста
+            const testFunctionBtn = document.getElementById('testFunctionBtn');
+            if (testFunctionBtn) {
+                testFunctionBtn.addEventListener('click', function() {
+                    testFunction();
+                });
+            }
+            
+            // Обработчик для кнопки выхода
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+            
+            // Обработчики для кнопок эмодзи (делегирование событий)
+            document.addEventListener('click', function(e) {
+                console.log('🔍 Клик по элементу:', e.target, 'Классы:', e.target.className);
+                if (e.target.classList.contains('emoji-btn')) {
+                    console.log('😀 Клик по кнопке эмодзи:', e.target);
+                    const emoji = e.target.getAttribute('data-emoji');
+                    if (emoji) {
+                        console.log('😀 Эмодзи найдено:', emoji);
+                        insertEmoji(emoji);
+                    } else {
+                        console.error('😀 Атрибут data-emoji не найден!');
+                    }
+                }
+            });
+            
+            // Применяем стили к существующим кнопкам эмодзи
+            function styleEmojiButtons() {
+                const emojiButtons = document.querySelectorAll('.emoji-btn');
+                // console.log('🎨 Найдено кнопок эмодзи:', emojiButtons.length);
+                
+                emojiButtons.forEach((btn, index) => {
+                    // console.log(`🎨 Стилизуем кнопку ${index}:`, btn);
+                    btn.style.background = 'none';
+                    btn.style.border = 'none';
+                    btn.style.fontSize = '1.2rem';
+                    btn.style.padding = '0.25rem';
+                    btn.style.margin = '0.125rem';
+                    btn.style.borderRadius = '0.25rem';
+                    btn.style.cursor = 'pointer';
+                    btn.style.transition = 'background-color 0.2s';
+                    btn.style.display = 'inline-block';
+                    
+                    // Удаляем старые обработчики
+                    btn.removeEventListener('mouseenter', btn._mouseenterHandler);
+                    btn.removeEventListener('mouseleave', btn._mouseleaveHandler);
+                    
+                    // Добавляем новые обработчики
+                    btn._mouseenterHandler = function() {
+                        this.style.backgroundColor = '#f8f9fa';
+                    };
+                    btn._mouseleaveHandler = function() {
+                        this.style.backgroundColor = 'transparent';
+                    };
+                    
+                    btn.addEventListener('mouseenter', btn._mouseenterHandler);
+                    btn.addEventListener('mouseleave', btn._mouseleaveHandler);
+                });
+            }
+            
+            // Применяем стили к кнопкам эмодзи
+            styleEmojiButtons();
+            
+            // Применяем стили сразу при загрузке (только один раз)
+            setTimeout(() => {
+                window.applyMessageStyles();
+                styleEmojiButtons();
+            }, 1000);
+            
+            // Обработчик для поиска участников
+            document.addEventListener('input', function(e) {
+                console.log('🔍 Событие input:', e.target.id, e.target.value);
+                if (e.target.id === 'participantsSearch') {
+                    console.log('✅ Обрабатываем поиск участников');
+                    searchUsers(e.target.value);
+                }
+            });
+            
+            // Очистка результатов поиска при закрытии модального окна
+            const modal = document.getElementById('newChatModal');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    const searchResults = document.getElementById('searchResults');
+                    const searchInput = document.getElementById('participantsSearch');
+                    if (searchResults) {
+                        searchResults.style.display = 'none';
+                    }
+                    if (searchInput) {
+                        searchInput.value = '';
+                    }
+                    console.log('🧹 Модальное окно закрыто, результаты поиска очищены');
+                });
+            }
+        });
+    </script>
+    
+    <!-- Подключаем модули JavaScript в правильном порядке -->
+    <script src="/static/js/notifications.js?v=25"></script>
+    <script src="/static/js/typing.js?v=25"></script>
+    <script src="/static/js/polling.js?v=25"></script>
+    <script src="/static/js/websocket.js?v=25"></script>
+    <script src="/static/js/reactions.js?v=27"></script>
+    <script src="/static/js/voice.js?v=25"></script>
+    <script src="/static/js/notes.js?v=25"></script>
+    <script src="/static/js/files.js?v=25"></script>
+    <script src="/static/js/search.js?v=25"></script>
+    <script src="/static/js/ui.js?v=25"></script>
+    <script src="/static/js/chat.js?v=25"></script>
+    <script src="/static/js/main.js?v=25"></script>
+    <script>
+        // Диагностика после загрузки всех скриптов
+        setTimeout(() => {
+            console.log('🔍 Проверяем состояние после загрузки скриптов:');
+            console.log('📁 uiManager:', typeof window.uiManager, window.uiManager);
+            console.log('📁 chatManager:', typeof window.chatManager, window.chatManager);
+            console.log('📁 chatManager.currentUserId:', window.chatManager?.currentUserId);
+            console.log('📁 searchManager:', typeof window.searchManager, window.searchManager);
+            console.log('📁 noteManager:', typeof window.noteManager, window.noteManager);
+            
+            // Проверяем эмодзи пикер
+            const picker = document.getElementById('emojiPicker');
+            console.log('📁 Эмодзи пикер найден:', !!picker);
+            if (picker) {
+                const styles = window.getComputedStyle(picker);
+                console.log('📁 Стили эмодзи пикера:', {
+                    display: styles.display,
+                    position: styles.position,
+                    zIndex: styles.zIndex,
+                    backgroundColor: styles.backgroundColor,
+                    border: styles.border
+                });
+                
+                // Принудительно применяем стили для видимости
+                picker.style.position = 'fixed';
+                picker.style.zIndex = '9999';
+                picker.style.backgroundColor = 'white';
+                picker.style.border = '2px solid #007bff';
+                picker.style.borderRadius = '8px';
+                picker.style.padding = '10px';
+                picker.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                picker.style.maxHeight = '300px';
+                picker.style.overflow = 'auto';
+                picker.style.width = '300px';
+                console.log('📁 Принудительно применили стили к эмодзи пикеру');
+            }
+            
+            // Проверяем CSS классы сообщений
+            const messageCards = document.querySelectorAll('.message-card');
+            console.log('📁 Найдено message-card элементов:', messageCards.length);
+            
+            if (messageCards.length > 0) {
+                messageCards.forEach((card, index) => {
+                    if (index < 3) { // Проверяем первые 3
+                        const styles = window.getComputedStyle(card);
+                        const container = card.querySelector('.message-container');
+                        const containerStyles = container ? window.getComputedStyle(container) : null;
+                        
+                        console.log(`📁 Сообщение ${index}:`, {
+                            classes: card.className,
+                            marginLeft: styles.marginLeft,
+                            marginRight: styles.marginRight,
+                            textAlign: styles.textAlign,
+                            containerBg: containerStyles ? containerStyles.backgroundColor : 'нет контейнера',
+                            containerColor: containerStyles ? containerStyles.color : 'нет контейнера'
+                        });
+                    }
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
